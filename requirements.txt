@@ -1,0 +1,12 @@
+numpy
+pandas
+numba
+torch
+gymnasium
+matplotlib
+grid2op
+lightsim2grid
+wandb
+optuna
+tensorboard
+jsonargparse[signatures]
