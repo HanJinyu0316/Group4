@@ -21,14 +21,6 @@ From there use the `requirements.txt` to install all required packages:
 ```bash
 pip install -r requirements.txt
 ```
-The local submodule 'AgentEmporium' should be install manually (from the L2RPN top directory) using:
-```bash
-pip install .\AgentEmporium\
-```
-The local submodule 'lightsim2grid' should also be install manually (from the L2RPN top directory) using:
-```bash
-pip install .\AgentEmporium\
-```
 
 You can now run the code in the repository.
 If you have a GPU, install [cuda 12.1](https://developer.nvidia.com/cuda-12-1-0-download-archive) (from Nvidia) and then install torch and torchg-eometric with cuda support enabled:
