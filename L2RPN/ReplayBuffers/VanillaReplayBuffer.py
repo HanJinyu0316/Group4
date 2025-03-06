@@ -16,8 +16,6 @@ class ReplayBuffer(BaseReplayBuffer):
             gamma (float): Discount factor
             N_steps (int, optional): For N step learning.
                 Defaults to 1 (disabled).
-            beta_dec (float, optional): To what degree to use importance weights.
-                Defaults to 1e-3 (no corrections).
         """
         self.storage = []
         
