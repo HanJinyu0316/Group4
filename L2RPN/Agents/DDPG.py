@@ -57,7 +57,7 @@ class DDPG(BaseAgent):
 
     def update(self, batch: VanillaBatch) -> tuple[float, float]:
         self.q_optimizer.zero_grad()
-        q_loss, loss_for_prior = self._compute_loss_q(batch)
+        q_loss = self._compute_loss_q(batch)
         q_loss.backward()
         self.q_optimizer.step()
 
@@ -124,5 +124,3 @@ class DDPG(BaseAgent):
     def _compute_loss(self, batch: VanillaBatch) -> tuple[torch.Tensor]:
         pass
         
-
-
