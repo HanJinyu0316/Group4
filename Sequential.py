@@ -41,13 +41,15 @@ def run(env_name:str="l2rpn_case14_sandbox", agent:Literal['DDPG','TD3','SAC']="
     # Hint: You will need to implement this inside TemplateEnvWrapper
     OBS_DIM = None
     ACT_DIM = None
+    ACT_LIMIT = None
     # TODO: Agent not converging? Maybe try non-default hyperparameters / hyperparameter optimization
     hyperparameters = {}
     agent_lookup = {"DDPG":(DDPG, DDPGParams),
                     "TD3":(TD3,TD3HParams), 
                     "SAC":(SAC,SACHParams)}
     agent_class, agent_hparams = agent_lookup[agent]
-    agent:DDPG|TD3|SAC = agent_class(agent_hparams(OBS_DIM, ACT_DIM, **hyperparameters))
+    agent:DDPG|TD3|SAC = agent_class(agent_hparams(obs_dim=OBS_DIM, act_dim=ACT_DIM, act_limit=ACT_LIMIT, 
+                                                   **hyperparameters))
     
     # >> Replay Buffer <<
     buffer = ReplayBuffer(max_size=replay_size, obs_dim=OBS_DIM,
