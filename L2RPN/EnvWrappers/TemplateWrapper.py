@@ -12,12 +12,7 @@ from grid2op.typing_variables import RESET_OPTIONS_TYPING
 from grid2op.Reward import BaseReward, GameplayReward
 
 from L2RPN.Abstract import BaseEnvWrapper
-from L2RPN.Utilities.Progress import get_env_size
-
-from .ActionPreProcessing import (ActionPipelineParams, ActionPipeline, Support, ActionFilters)
-from .OutcomePostProcessing import (OutcomePipelineParams, OutcomePipeline, OutcomeFilters)
 from .Utilities import VanillaTracker
-from ..Abstract import Stage
 
 class TemplateEnvWrapper(BaseEnvWrapper):
     
@@ -45,12 +40,23 @@ class TemplateEnvWrapper(BaseEnvWrapper):
         self.verbose = verbose
 
     def get_env_size(self) -> tuple[int, list[str]]:
-        return get_env_size(self.env)
+        """
+        Deduces the number of episodes present in a locally-stored Grid2Op Environment.
+
+        Args:
+            env (grid2op.Environment): Path on disk where Environment is stored
+
+        Returns:
+            int: Number of unique episodes in the Environment's chronics
+            list[int] (optional): List of Episode IDs
+        """
+        ids = [x.stem for x in Path(self.env.chronics_handler.path).glob("*") if x.is_dir()]
+        return len(ids), ids
     
     def process_agent_action(self, action) -> BaseAction:
         """
         Process the action suggested by the agent.
-
+_description_
         Args:
             action (object): Agent's output (the action)
         """
