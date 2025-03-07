@@ -14,7 +14,7 @@ from L2RPN.ReplayBuffer.VanillaReplayBuffer import ReplayBuffer
 
 def run(env_name:str="l2rpn_case14_sandbox", agent:Literal['DDPG','TD3','SAC']="DDPG",
         n_active:int=5000, replay_size:int=10000, rho_threshold:float=0.95, stage:Literal["TRAIN","VALIDATE","TEST"]="TRAIN", 
-        seed:int=0, verbose:bool=False) -> Tuple[float]:
+        batch_size:int=32, seed:int=0, verbose:bool=False) -> Tuple[float]:
     """
     Run one Reinforcement Learning (RL) loop. 
 
@@ -25,6 +25,7 @@ def run(env_name:str="l2rpn_case14_sandbox", agent:Literal['DDPG','TD3','SAC']="
         replay_size (int, optional): How big the replay buffer is. Defaults to 10000.
         rho_threshold (float, optional): Fraction of line thermal limit above which agent will be activated. Defaults to 0.95.
         stage (Literal['TRAIN','VALIDATE','TEST'], optional): Which stage we are in. Defaults to "TRAIN".
+        batch_size (int, optional). Number of experiences in each batch. Defaults to 32.
         seed (int, optional): Seed for reproducibility. Defaults to 0.
         verbose (bool, optional): Whether to print out extra information. Defaults to False.
 
@@ -68,7 +69,15 @@ def run(env_name:str="l2rpn_case14_sandbox", agent:Literal['DDPG','TD3','SAC']="
             if stage.upper() == "TRAIN":
                 buffer.add(obs_vec, action, reward, next_obs_vec, done)
                 
-                # TODO: Decay epsilon for DDPG?
+                # Backpropagate
+                if buffer.size > batch_size:
+                    # Get a batch of experiences from the replay buffer
+                    batch = buffer.sample(batch_size)
+                    # Update the parameters (weights & biases) of the agent
+                    # based on the batch
+                    agent.update(batch)
+                    # TODO: Decay epsilon for DDPG?
+               
             ep_reward += reward
             ep_steps += 1
             if done: break
