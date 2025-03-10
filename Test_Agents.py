@@ -3,11 +3,11 @@ import numpy as np
 import torch.nn as nn, torch.optim as optim
 import gymnasium as gym
 from L2RPN.ReplayBuffer.VanillaReplayBuffer import ReplayBuffer
-from L2RPN.Agents.DDPG import DDPG, DDPGParams
+from L2RPN.Agents.DDPG import DDPG, DDPGParams # Score of -0.44 in ~470 episodes
 from L2RPN.Agents.TD3 import TD3, TD3HParams
-from L2RPN.Agents.SAC import SAC, SACHParams
+from L2RPN.Agents.SAC import SAC, SACHParams # Not really converging in tests...
 
-AGENT = "DDPG" #"SAC"# #"TD3" # DDPG
+AGENT = "TD3" # DDPG #"SAC"
 OBS_DIM = 3
 ACT_DIM = 1
 ACT_LIMIT = 2
@@ -44,7 +44,7 @@ N = 10
 M = 2
 G = 20
 POLICY_LOSS_MODE = "min"
-AUTO_ENTROPY = True
+AUTO_ENTROPY = False
 N_STEPS = 3
 VALIDATE_EVERY = 25
 
@@ -102,7 +102,7 @@ if __name__ == "__main__":
 
             done = terminated or truncated
 
-            buffer.add(obs, action, reward, next_obs, done)
+            buffer.add(obs, action, reward, next_obs, terminated)
             obs = next_obs
 
             if len(buffer) >= START_STEPS:
