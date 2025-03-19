@@ -62,14 +62,17 @@ def run(env_name:str="l2rpn_case14_sandbox", agent:Literal['DDPG','TD3','SAC']="
         ep_pos = ep_no % n_eps
         ep_id = ep_ids[ep_pos]
         
-        obs_vec, info, done = env.reset(options={"time serie id": ep_id})
+        obs_vec, info, terminated, truncated = env.reset(options={"time serie id": ep_id})
+        done = terminated or truncated
+
         ep_steps, ep_reward = 0, info["reward"]
         while not done:
             action = agent.act(obs_vec)
-            next_obs_vec, reward, done, info = env.step(action)
+            next_obs_vec, reward, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
             
             if stage.upper() == "TRAIN":
-                buffer.add(obs_vec, action, reward, next_obs_vec, done)
+                buffer.add(obs_vec, action, reward, next_obs_vec, terminated) # Only want done in the buffer if episode ended prematurely
                 
                 # Backpropagate
                 if buffer.size > batch_size:

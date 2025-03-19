@@ -56,7 +56,6 @@ class TemplateEnvWrapper(BaseEnvWrapper):
     def process_agent_action(self, action) -> BaseAction:
         """
         Process the action suggested by the agent.
-_description_
         Args:
             action (object): Agent's output (the action)
         """
@@ -75,7 +74,7 @@ _description_
         """
         pass
     
-    def step(self, agent_action) -> tuple[np.ndarray, float, bool, dict]:
+    def step(self, agent_action) -> tuple[np.ndarray, float, bool, bool, dict]:
         """
         Provides an interface to interact with the wrapped Grid2Op environment.
 
@@ -103,9 +102,12 @@ _description_
 
         self.tracker.info.update({"time":time.perf_counter() - self.tracker.start})
         obs_vec = self.convert_observation(self.tracker.state)
+
+        terminated, truncated = self._get_terminated_truncated()
         return (obs_vec, # Vector Representation of the Observation
                 self.tracker.tot_reward, # Reward accumulated, can be a sum if we include heuristics, otherwise is just the reward from env.step(...)
-                self.tracker.done, # Whether the episode ended, occurs if we reach the end of the timeseries, or the powerflow diverges
+                terminated, # Whether the episode was prematurely ended, i.e. if there's a blackout or powerflow diverges
+                truncated, # Whether the episode was truncated, i.e. the agent reached the max time steps for the environment
                 self.tracker.info # Additional information, stored in a dictionary
         ) 
         
@@ -119,7 +121,7 @@ _description_
             self.tracker.step(obs, reward, done, info)
 
 
-    def reset(self, seed:int|None=None, options:RESET_OPTIONS_TYPING={}) -> Tuple[np.ndarray, np.ndarray, bool]:
+    def reset(self, seed:int|None=None, options:RESET_OPTIONS_TYPING={}) -> Tuple[np.ndarray, np.ndarray, bool, bool]:
         """
         Reset the environment, this will start a new episode
         
@@ -148,10 +150,27 @@ _description_
         )
         
         obs_vec = self.convert_observation(self.tracker.state)
+        terminated, truncated = self._get_terminated_truncated()
         return (obs_vec, # Obs
                 dict(reward=0), # Info
-                self.tracker.done # Done
+                terminated, truncated
         ) 
+    
+    
+    def _get_terminated_truncated(self) -> Tuple[bool, bool]:
+        """
+        Terminated: Episode ended prematurely (game over)
+        Truncated: Episode ended because we reached the end of the timeseries (win!)
+
+        Returns:
+            Tuple[bool, bool]: Terminated, Truncated
+        """
+        done = self.tracker.done
+        step = self.env.nb_time_step
+        env_max_step = self.env.max_episode_duration()
+        terminated = done and not (step == env_max_step)
+        truncated = done and (step == env_max_step)
+        return terminated, truncated
 
     def set_id(self, chronic_id:int|str):
         self.env.set_id(chronic_id)
